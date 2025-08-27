@@ -1,12 +1,12 @@
 package libs
 
 import (
+	"account-summary/src/models"
 	"encoding/csv"
 	"errors"
 	"fmt"
 	"log"
 	"os"
-	"transaction-summary/src/models"
 )
 
 type CsvReader interface {

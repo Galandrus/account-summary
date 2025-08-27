@@ -1,9 +1,9 @@
 package main
 
 import (
+	"account-summary/src/libs"
 	"fmt"
 	"log"
-	"transaction-summary/src/models/libs"
 )
 
 func main() {
@@ -16,4 +16,12 @@ func main() {
 	for _, transaction := range transactions {
 		fmt.Println(transaction.String())
 	}
+
+	summaryProcessor := libs.NewSummaryProcessor()
+	summary, err := summaryProcessor.ProcessSummary(transactions)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(summary.String())
 }
