@@ -1,0 +1,101 @@
+id,date,transaction,name
+1,2025-01-03,1250.50,Monthly salary
+2,2025-01-03,630.00,App project
+3,2025-01-05,-89.99,Grocery purchase
+4,2025-01-05,380.00,Freelance work
+5,2025-01-08,500.00,Received transfer
+6,2025-01-08,680.00,Mobile project
+7,2025-01-12,-45.75,Restaurant
+8,2025-01-12,-115.50,Medication
+9,2025-01-15,-120.00,Fuel
+10,2025-01-15,-185.00,Online shopping
+11,2025-01-18,750.25,Bonus
+12,2025-01-18,-85.00,Entertainment
+13,2025-01-22,-67.30,Pharmacy
+14,2025-01-22,-75.60,Fast food
+15,2025-01-25,-200.00,Clothing
+16,2025-01-25,650.00,Web project
+17,2025-01-28,300.00,Refund
+18,2025-01-28,540.00,Data analysis
+19,2025-01-30,-150.50,Electronics
+20,2025-01-30,-155.75,Shopping
+21,2025-02-02,1250.50,Monthly salary
+22,2025-02-02,-100.00,Subscriptions
+23,2025-02-05,-85.20,Coffee and snacks
+24,2025-02-05,-140.25,Gasoline
+25,2025-02-08,-95.75,Gasoline
+26,2025-02-08,-92.30,Restaurant
+27,2025-02-11,-180.00,Entertainment
+28,2025-02-11,-200.00,Gifts
+29,2025-02-14,400.00,Commission
+30,2025-02-14,-210.00,Appliances
+31,2025-02-17,-55.90,Books
+32,2025-02-17,760.00,Web development
+33,2025-02-20,-220.00,Gifts
+34,2025-02-20,480.00,Translation
+35,2025-02-23,-75.45,Public transport
+36,2025-02-23,-95.75,Supermarket
+37,2025-02-26,-130.00,Fast food
+38,2025-02-26,-78.45,Supermarket
+39,2025-02-28,600.00,Investment
+40,2025-02-28,-125.00,Streaming
+41,2025-03-01,1250.50,Monthly salary
+42,2025-03-01,-145.00,Clothing
+43,2025-03-03,-90.30,Cleaning supplies
+44,2025-03-03,610.00,Digital marketing
+45,2025-03-06,-160.00,Sports
+46,2025-03-06,720.00,Graphic design
+47,2025-03-09,350.00,Consulting
+48,2025-03-09,-170.50,Electronics
+49,2025-03-12,-110.75,Healthcare
+50,2025-03-12,-120.75,Fuel
+51,2025-03-15,-95.00,Streaming
+52,2025-03-15,-88.90,Restaurant
+53,2025-03-18,800.00,Freelance work
+54,2025-03-18,-95.50,Coffee
+55,2025-03-21,-140.50,Online shopping
+56,2025-03-21,470.00,Writing
+57,2025-03-24,-70.25,Parking
+58,2025-03-24,590.00,Programming
+59,2025-03-27,450.00,Extra project
+60,2025-03-27,-150.00,Healthcare
+61,2025-03-30,-125.00,Valentine's gift
+62,2025-03-30,-165.00,Home repairs
+63,2025-04-01,1250.50,Monthly salary
+64,2025-04-01,-80.25,Transport
+65,2025-04-03,-88.90,Supermarket
+66,2025-04-03,-105.25,Transport
+67,2025-04-06,-175.00,Repairs
+68,2025-04-06,420.00,IT consulting
+69,2025-04-09,550.00,Private lessons
+70,2025-04-09,1250.50,Monthly salary
+71,2025-04-12,-105.60,Internet
+72,2025-04-12,-130.00,Entertainment
+73,2025-04-15,-190.00,Furniture
+74,2025-04-15,-135.75,Shopping
+75,2025-04-18,700.00,Advisory
+76,2025-04-18,-110.90,Pharmacy
+77,2025-04-21,-65.75,Food
+78,2025-04-21,710.00,E-commerce project
+79,2025-05-01,1250.50,Monthly salary
+80,2025-05-05,-180.00,Appliances
+81,2025-05-10,-160.25,Fuel
+82,2025-05-15,-115.60,Internet
+83,2025-05-20,520.00,Technical translation
+84,2025-05-25,-145.90,Gasoline
+85,2025-05-30,-120.00,Gifts
+86,2025-06-01,1250.50,Monthly salary
+87,2025-06-05,-155.25,Food
+88,2025-06-10,-210.00,Repairs
+89,2025-06-15,640.00,Financial analysis
+90,2025-06-20,-95.60,Transport
+91,2025-06-25,-130.75,Pharmacy
+92,2025-06-30,-190.00,Furniture
+93,2025-07-01,1250.50,Monthly salary
+94,2025-07-05,-110.25,Streaming and subscriptions
+95,2025-07-10,-92.75,Supermarket
+96,2025-07-15,690.00,Software development
+97,2025-07-20,-175.00,Clothing
+98,2025-07-25,-100.50,Medication
+99,2025-07-30,-85.00,Entertainment
+100,2025-07-31,580.00,Consulting
