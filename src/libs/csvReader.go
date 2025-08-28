@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
+	"time"
 )
 
 type CsvReader interface {
@@ -63,19 +65,39 @@ func (c *csvReader) mapCsvToTransactions(csvRead [][]string) ([]models.Transacti
 	var transactions []models.Transaction
 	csvRead = csvRead[1:]
 	for _, t := range csvRead {
-		if len(t) != 4 {
-			log.Default().Printf("error to read transaction: %v\n", t)
+		transaction, err := getTransaction(t)
+		if err != nil {
+			log.Default().Printf("error to read transaction: %v\n", err)
 			continue
 		}
 
-		transaction := models.Transaction{
-			ID:          t[0],
-			Date:        t[1],
-			Transaction: t[2],
-			Name:        t[3],
-		}
 		transactions = append(transactions, transaction)
 	}
 
 	return transactions, nil
+}
+
+func getTransaction(t []string) (models.Transaction, error) {
+	if len(t) != 4 {
+		return models.Transaction{}, fmt.Errorf("transaction is not valid: %v", t)
+	}
+
+	amount, err := strconv.ParseFloat(t[2], 64)
+	if err != nil {
+		return models.Transaction{}, fmt.Errorf("error to parse amount: %v", err)
+	}
+
+	date, err := time.Parse("2006-01-02", t[1])
+	if err != nil {
+		return models.Transaction{}, fmt.Errorf("error to parse date: %v", err)
+	}
+
+	transaction := models.Transaction{
+		ID:     t[0],
+		Date:   date,
+		Amount: amount,
+		Name:   t[3],
+	}
+
+	return transaction, nil
 }
