@@ -1,6 +1,7 @@
 package main
 
 import (
+	"account-summary/src/config"
 	"account-summary/src/connections"
 	"account-summary/src/handlers"
 	"account-summary/src/libs"
@@ -9,9 +10,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
-
-	"github.com/joho/godotenv"
 )
 
 // Middleware CORS para permitir peticiones desde el frontend
@@ -32,15 +30,10 @@ func corsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func init() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Printf("Warning: Error loading .env file: %v", err)
-	}
-}
-
 func main() {
-	mongoClient := connections.NewMongoConn(os.Getenv("MONGO_URI"))
+	cfg := config.Load()
+
+	mongoClient := connections.NewMongoConn(cfg.MongoURI)
 
 	transactionRepository := repository.NewTransactionRepository(mongoClient)
 	accountRepository := repository.NewAccountRepository(mongoClient)
@@ -72,8 +65,7 @@ func main() {
 	mux.HandleFunc("/summary", handler.GetSummary)
 	mux.HandleFunc("/send-email", handler.SendEmail)
 
-	port := os.Getenv("PORT")
-	fmt.Printf("server running on http://localhost:%s\n", port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), corsMiddleware(mux)))
+	fmt.Printf("server running on http://localhost:%s\n", cfg.Port)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", cfg.Port), corsMiddleware(mux)))
 
 }
