@@ -23,20 +23,14 @@ func (s *summaryProcessor) ProcessSummary(transactions []models.Transaction) (mo
 
 	for _, t := range transactions {
 		if t.Amount > 0 {
-			summary.Credits.TotalAmount += t.Amount
-			summary.Credits.TotalTransactions++
+			summary.Credits.AddTransaction(t.Amount, t.Date.Month())
 		} else {
-			summary.Debits.TotalAmount += t.Amount
-			summary.Debits.TotalTransactions++
+			summary.Debits.AddTransaction(t.Amount, t.Date.Month())
 		}
 
-		summary.Overall.TransactionsPerMonth[t.Date.Month()]++
-		summary.Debits.TransactionsPerMonth[t.Date.Month()]++
-		summary.Credits.TransactionsPerMonth[t.Date.Month()]++
+		summary.Overall.AddTransaction(t.Amount, t.Date.Month())
 	}
 
-	summary.Overall.TotalAmount = summary.Credits.TotalAmount + summary.Debits.TotalAmount
-	summary.Overall.TotalTransactions = summary.Credits.TotalTransactions + summary.Debits.TotalTransactions
 	summary.Overall.CalculateAverageAmount()
 	summary.Credits.CalculateAverageAmount()
 	summary.Debits.CalculateAverageAmount()

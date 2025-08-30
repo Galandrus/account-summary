@@ -6,10 +6,12 @@ import (
 )
 
 type Transaction struct {
-	ID     string    `json:"id"`
-	Date   time.Time `json:"date"`
-	Amount float64   `json:"amount"`
-	Name   string    `json:"name"`
+	ID        string
+	Date      time.Time
+	Amount    float64
+	Name      string
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 func (t *Transaction) String() string {
