@@ -8,9 +8,9 @@ import (
 )
 
 type TransactionSummary struct {
-	Overall SummaryStats
-	Debits  SummaryStats
-	Credits SummaryStats
+	Overall SummaryStats `json:"overall" bson:"overall"`
+	Debits  SummaryStats `json:"debits" bson:"debits"`
+	Credits SummaryStats `json:"credits" bson:"credits"`
 }
 
 func (s *TransactionSummary) String() string {
@@ -18,10 +18,10 @@ func (s *TransactionSummary) String() string {
 }
 
 type SummaryStats struct {
-	TotalAmount          float64
-	TotalTransactions    int
-	AverageAmount        float64
-	TransactionsPerMonth TransactionsPerMonth
+	TotalAmount          float64              `json:"totalAmount" bson:"totalAmount"`
+	TotalTransactions    int                  `json:"totalTransactions" bson:"totalTransactions"`
+	AverageAmount        float64              `json:"averageAmount" bson:"averageAmount"`
+	TransactionsPerMonth TransactionsPerMonth `json:"transactionsPerMonth" bson:"transactionsPerMonth"`
 }
 
 func (s *SummaryStats) CalculateAverageAmount() {

@@ -4,19 +4,13 @@ import (
 	"account-summary/src/models"
 	"context"
 	"log"
-	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-const (
-	dbName         = "account_summary"
-	collectionName = "transactions"
-)
-
 type TransactionRepository interface {
-	GetTransactions(ctx context.Context) ([]models.Transaction, error)
+	GetTransactions(ctx context.Context, accountId string) ([]models.Transaction, error)
 	CreateTransactions(ctx context.Context, transactions []models.Transaction) error
 }
 
@@ -25,13 +19,13 @@ type transactionRepository struct {
 }
 
 func NewTransactionRepository(mongoClient *mongo.Client) TransactionRepository {
-	collection := mongoClient.Database(dbName).Collection(collectionName)
+	collection := mongoClient.Database(dbName).Collection(collectionTransactions)
 
 	return &transactionRepository{collection: collection}
 }
 
-func (r *transactionRepository) GetTransactions(ctx context.Context) ([]models.Transaction, error) {
-	cursor, err := r.collection.Find(context.Background(), bson.D{})
+func (r *transactionRepository) GetTransactions(ctx context.Context, accountId string) ([]models.Transaction, error) {
+	cursor, err := r.collection.Find(context.Background(), bson.M{"accountId": accountId})
 	if err != nil {
 		return nil, err
 	}
@@ -47,8 +41,6 @@ func (r *transactionRepository) GetTransactions(ctx context.Context) ([]models.T
 func (r *transactionRepository) CreateTransactions(ctx context.Context, transactions []models.Transaction) error {
 	transactionBson := make([]interface{}, len(transactions))
 	for i, transaction := range transactions {
-		transaction.CreatedAt = time.Now().UTC()
-		transaction.UpdatedAt = time.Now().UTC()
 		transactionBson[i] = transaction
 	}
 

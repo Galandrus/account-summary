@@ -17,13 +17,9 @@ var (
 	dbDefaultPoolSize       = uint64(10)
 )
 
-const (
-	local_uri = "mongodb://localhost:27017/database?retryWrites=true&w=majority"
-)
-
 func NewMongoConn(uri string) *mongo.Client {
 	if uri == "" {
-		uri = local_uri
+		panic("MONGO_URI is not set")
 	}
 	clientOptions := options.ClientOptions{
 		ConnectTimeout:  &dbDefaultConnectTimeout,
