@@ -5,19 +5,21 @@ import (
 	"account-summary/src/models"
 	"account-summary/src/repository"
 	"context"
-	"fmt"
-	"html/template"
+	"errors"
 	"log"
-	"strings"
 	"time"
 )
 
-type TransactionsService interface {
-	GetTransactions(ctx context.Context, accountId string) ([]models.Transaction, error)
-	CreateTransactions(ctx context.Context, transactions []models.Transaction, accountId string) error
-	LoadTransactions(ctx context.Context, path string, accountId string) error
-	GetSummary(ctx context.Context, accountId string) (models.TransactionSummary, error)
-	SendEmail(ctx context.Context, accountId string) ([]byte, error)
+type TransactionsServiceInterface interface {
+	GetTransactionsByEmail(ctx context.Context, accountEmail string) ([]models.Transaction, error)
+	CreateTransactions(ctx context.Context, transactions []models.Transaction, account *models.Account) error
+	LoadTransactions(ctx context.Context, path string, accountEmail string) error
+	GetSummary(ctx context.Context, account *models.Account) (models.TransactionSummary, error)
+	SendEmail(ctx context.Context, accountEmail string) error
+	GetOrCreateAccount(ctx context.Context, accountEmail string) (*models.Account, error)
+	UpdateAccountSummary(ctx context.Context, account *models.Account, summary models.TransactionSummary) error
+	UpdateSummary(ctx context.Context, account *models.Account) error
+	GetSummaryByEmail(ctx context.Context, accountEmail string) (models.TransactionSummary, error)
 }
 
 type transactionsService struct {
@@ -25,6 +27,8 @@ type transactionsService struct {
 	summaryProcessor      libs.SummaryProcessor
 	transactionRepository repository.TransactionRepository
 	accountRepository     repository.AccountRepository
+	emailSender           libs.EmailSender
+	idGenerator           libs.IdGenerator
 }
 
 func NewTransactionsService(
@@ -32,23 +36,38 @@ func NewTransactionsService(
 	accountRepository repository.AccountRepository,
 	csvReader libs.CsvReader,
 	summaryProcessor libs.SummaryProcessor,
-) TransactionsService {
+	emailSender libs.EmailSender,
+	idGenerator libs.IdGenerator,
+) TransactionsServiceInterface {
 	return &transactionsService{
 		transactionRepository: transactionRepository,
 		accountRepository:     accountRepository,
 		csvReader:             csvReader,
 		summaryProcessor:      summaryProcessor,
+		emailSender:           emailSender,
+		idGenerator:           idGenerator,
 	}
 }
 
-func (s *transactionsService) GetTransactions(ctx context.Context, accountId string) ([]models.Transaction, error) {
-	return s.transactionRepository.GetTransactions(ctx, accountId)
+func (s *transactionsService) GetTransactionsByEmail(ctx context.Context, accountEmail string) ([]models.Transaction, error) {
+	account, err := s.accountRepository.GetAccountByEmail(ctx, accountEmail)
+	if err != nil {
+		log.Default().Printf("error to get account: %v\n", err)
+		return nil, err
+	}
+
+	if account == nil {
+		log.Default().Printf("account not found: %v\n", accountEmail)
+		return nil, errors.New("account not found")
+	}
+
+	return s.transactionRepository.GetTransactions(ctx, account.ID)
 }
 
-func (s *transactionsService) CreateTransactions(ctx context.Context, transactions []models.Transaction, accountId string) error {
+func (s *transactionsService) CreateTransactions(ctx context.Context, transactions []models.Transaction, account *models.Account) error {
 	for idx, t := range transactions {
 		transaction := t
-		transaction.AccountId = accountId
+		transaction.AccountId = account.ID
 		transaction.CreatedAt = time.Now()
 		transaction.UpdatedAt = time.Now()
 		transactions[idx] = transaction
@@ -57,34 +76,55 @@ func (s *transactionsService) CreateTransactions(ctx context.Context, transactio
 	return s.transactionRepository.CreateTransactions(ctx, transactions)
 }
 
-func (s *transactionsService) LoadTransactions(ctx context.Context, path string, accountId string) error {
+func (s *transactionsService) LoadTransactions(ctx context.Context, path string, accountEmail string) error {
 	transactions, err := s.csvReader.LoadTransactions(path)
 	if err != nil {
 		log.Default().Printf("error to load transactions: %v\n", err)
 		return err
 	}
 
-	err = s.CreateTransactions(ctx, transactions, accountId)
+	account, err := s.GetOrCreateAccount(ctx, accountEmail)
+	if err != nil {
+		log.Default().Printf("error to get or create account: %v\n", err)
+		return err
+	}
+
+	err = s.CreateTransactions(ctx, transactions, account)
 	if err != nil {
 		log.Default().Printf("error to create transactions: %v\n", err)
 		return err
 	}
 
-	return s.UpdateSummary(ctx, accountId)
+	return s.UpdateSummary(ctx, account)
 }
 
-func (s *transactionsService) UpdateSummary(ctx context.Context, accountId string) error {
-	summary, err := s.GetSummary(ctx, accountId)
+func (s *transactionsService) UpdateSummary(ctx context.Context, account *models.Account) error {
+	summary, err := s.GetSummary(ctx, account)
 	if err != nil {
 		log.Default().Printf("error to update summary: %v\n", err)
 		return err
 	}
 
-	return s.UpsertAccount(ctx, accountId, summary)
+	return s.UpdateAccountSummary(ctx, account, summary)
 }
 
-func (s *transactionsService) GetSummary(ctx context.Context, accountId string) (models.TransactionSummary, error) {
-	transactions, err := s.GetTransactions(ctx, accountId)
+func (s *transactionsService) GetSummaryByEmail(ctx context.Context, accountEmail string) (models.TransactionSummary, error) {
+	account, err := s.accountRepository.GetAccountByEmail(ctx, accountEmail)
+	if err != nil {
+		log.Default().Printf("error to get account: %v\n", err)
+		return models.TransactionSummary{}, err
+	}
+
+	if account == nil {
+		log.Default().Printf("account not found: %v\n", accountEmail)
+		return models.TransactionSummary{}, errors.New("account not found")
+	}
+
+	return s.GetSummary(ctx, account)
+}
+
+func (s *transactionsService) GetSummary(ctx context.Context, account *models.Account) (models.TransactionSummary, error) {
+	transactions, err := s.transactionRepository.GetTransactions(ctx, account.ID)
 	if err != nil {
 		log.Default().Printf("error to get summary: %v\n", err)
 		return models.TransactionSummary{}, err
@@ -99,23 +139,11 @@ func (s *transactionsService) GetSummary(ctx context.Context, accountId string) 
 	return summary, nil
 }
 
-func (s *transactionsService) UpsertAccount(ctx context.Context, accountId string, summary models.TransactionSummary) error {
-	account, err := s.accountRepository.GetAccountById(ctx, accountId)
-	if err != nil {
-		log.Default().Printf("error to get account: %v\n", err)
-		return err
-	}
-
-	if account == nil {
-		account = &models.Account{
-			ID:        accountId,
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
-		}
-	}
+func (s *transactionsService) UpdateAccountSummary(ctx context.Context, account *models.Account, summary models.TransactionSummary) error {
 	account.Summary = summary
+	account.UpdatedAt = time.Now()
 
-	err = s.accountRepository.UpsertAccount(ctx, *account)
+	err := s.accountRepository.UpsertAccount(ctx, *account)
 	if err != nil {
 		log.Default().Printf("error to upsert account: %v\n", err)
 		return err
@@ -124,33 +152,45 @@ func (s *transactionsService) UpsertAccount(ctx context.Context, accountId strin
 	return nil
 }
 
-func (s *transactionsService) SendEmail(ctx context.Context, accountId string) ([]byte, error) {
-	summary, err := s.GetSummary(ctx, accountId)
+func (s *transactionsService) SendEmail(ctx context.Context, accountEmail string) error {
+	account, err := s.accountRepository.GetAccountByEmail(ctx, accountEmail)
 	if err != nil {
+		log.Default().Printf("error to get account: %v\n", err)
+		return err
+	}
+
+	err = s.emailSender.SendEmail(accountEmail, "Transaction Summary", account.Summary)
+	if err != nil {
+		log.Default().Printf("error to send email: %v\n", err)
+		return err
+	}
+
+	return nil
+}
+
+func (s *transactionsService) GetOrCreateAccount(ctx context.Context, accountEmail string) (*models.Account, error) {
+	account, err := s.accountRepository.GetAccountByEmail(ctx, accountEmail)
+	if err != nil {
+		log.Default().Printf("error to get account: %v\n", err)
 		return nil, err
 	}
 
-	// Crear estructura de datos para el template
-	templateData := struct {
-		models.TransactionSummary
-		GeneratedDate string
-	}{
-		TransactionSummary: summary,
-		GeneratedDate:      time.Now().Format("January 2, 2006 at 3:04 PM"),
+	if account != nil {
+		return account, nil
 	}
 
-	// Parsear el template
-	tmpl, err := template.ParseFiles("src/templates/summary.html")
+	account = &models.Account{
+		ID:        s.idGenerator.Generate("ACNT"),
+		Email:     accountEmail,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	err = s.accountRepository.UpsertAccount(ctx, *account)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing template: %v", err)
+		log.Default().Printf("error to upsert account: %v\n", err)
+		return nil, err
 	}
 
-	// Ejecutar el template y capturar el resultado
-	var htmlBuffer strings.Builder
-	err = tmpl.Execute(&htmlBuffer, templateData)
-	if err != nil {
-		return nil, fmt.Errorf("error executing template: %v", err)
-	}
-
-	return []byte(htmlBuffer.String()), nil
+	return account, nil
 }

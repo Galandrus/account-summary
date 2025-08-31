@@ -16,22 +16,22 @@ type TransactionsHandler interface {
 }
 
 type transactionsHandler struct {
-	service services.TransactionsService
+	service services.TransactionsServiceInterface
 }
 
-func NewTransactionsHandler(service services.TransactionsService) TransactionsHandler {
+func NewTransactionsHandler(service services.TransactionsServiceInterface) TransactionsHandler {
 	return &transactionsHandler{service: service}
 }
 
 func (h *transactionsHandler) GetTransactions(res http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
-	accountId := req.URL.Query().Get("accountId")
-	if accountId == "" {
-		http.Error(res, "accountId is required", http.StatusBadRequest)
+	accountEmail := req.URL.Query().Get("accountEmail")
+	if accountEmail == "" {
+		http.Error(res, "accountEmail is required", http.StatusBadRequest)
 		return
 	}
 
-	transactions, err := h.service.GetTransactions(ctx, accountId)
+	transactions, err := h.service.GetTransactionsByEmail(ctx, accountEmail)
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
@@ -48,8 +48,8 @@ func (h *transactionsHandler) LoadTransactions(res http.ResponseWriter, req *htt
 	defer body.Close()
 
 	var data struct {
-		Path      string `json:"path"`
-		AccountId string `json:"accountId"`
+		Path         string `json:"path"`
+		AccountEmail string `json:"accountEmail"`
 	}
 	err := json.NewDecoder(body).Decode(&data)
 	if err != nil {
@@ -60,32 +60,32 @@ func (h *transactionsHandler) LoadTransactions(res http.ResponseWriter, req *htt
 		http.Error(res, "path is required", http.StatusBadRequest)
 		return
 	}
-	if data.AccountId == "" {
-		http.Error(res, "accountId is required", http.StatusBadRequest)
+	if data.AccountEmail == "" {
+		http.Error(res, "accountEmail is required", http.StatusBadRequest)
 		return
 	}
 
 	log.Println("Loading transactions from path:", data.Path)
 
-	err = h.service.LoadTransactions(ctx, data.Path, data.AccountId)
+	err = h.service.LoadTransactions(ctx, data.Path, data.AccountEmail)
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	res.WriteHeader(http.StatusOK)
-	json.NewEncoder(res).Encode(fmt.Sprintf("Transactions loaded successfully for account %s", data.AccountId))
+	json.NewEncoder(res).Encode(fmt.Sprintf("Transactions loaded successfully for account %s", data.AccountEmail))
 }
 
 func (h *transactionsHandler) GetSummary(res http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
-	accountId := req.URL.Query().Get("accountId")
-	if accountId == "" {
-		http.Error(res, "accountId is required", http.StatusBadRequest)
+	accountEmail := req.URL.Query().Get("accountEmail")
+	if accountEmail == "" {
+		http.Error(res, "accountEmail is required", http.StatusBadRequest)
 		return
 	}
 
-	summary, err := h.service.GetSummary(ctx, accountId)
+	summary, err := h.service.GetSummaryByEmail(ctx, accountEmail)
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
@@ -97,20 +97,19 @@ func (h *transactionsHandler) GetSummary(res http.ResponseWriter, req *http.Requ
 
 func (h *transactionsHandler) SendEmail(res http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
-	accountId := req.URL.Query().Get("accountId")
-	if accountId == "" {
-		http.Error(res, "accountId is required", http.StatusBadRequest)
+	accountEmail := req.URL.Query().Get("accountEmail")
+	if accountEmail == "" {
+		http.Error(res, "accountEmail is required", http.StatusBadRequest)
 		return
 	}
 
 	// El servicio ahora devuelve el HTML ya procesado
-	htmlContent, err := h.service.SendEmail(ctx, accountId)
+	err := h.service.SendEmail(ctx, accountEmail)
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Solo establecer headers y devolver el contenido
-	res.Header().Set("Content-Type", "text/html; charset=utf-8")
-	res.Write(htmlContent)
+	res.WriteHeader(http.StatusOK)
+	res.Write([]byte("Email sent successfully"))
 }

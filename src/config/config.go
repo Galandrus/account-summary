@@ -9,8 +9,12 @@ import (
 
 // Config estructura para manejar toda la configuración
 type Config struct {
-	Port     string
-	MongoURI string
+	Port          string
+	MongoURI      string
+	EmailFrom     string
+	EmailPassword string
+	SMTPHost      string
+	SMTPPort      string
 }
 
 // Load carga la configuración desde variables de entorno
@@ -21,8 +25,12 @@ func Load() *Config {
 	}
 
 	config := &Config{
-		Port:     getEnv("PORT"),
-		MongoURI: getEnv("MONGO_URI"),
+		Port:          getEnv("PORT"),
+		MongoURI:      getEnv("MONGO_URI"),
+		EmailFrom:     getEnv("EMAIL_FROM"),
+		EmailPassword: getEnv("EMAIL_PASSWORD"),
+		SMTPHost:      getEnv("SMTP_HOST"),
+		SMTPPort:      getEnv("SMTP_PORT"),
 	}
 
 	return config

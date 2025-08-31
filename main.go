@@ -7,6 +7,7 @@ import (
 	"account-summary/src/libs"
 	"account-summary/src/repository"
 	"account-summary/src/services"
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -34,14 +35,17 @@ func main() {
 	cfg := config.Load()
 
 	mongoClient := connections.NewMongoConn(cfg.MongoURI)
+	defer mongoClient.Disconnect(context.Background())
 
 	transactionRepository := repository.NewTransactionRepository(mongoClient)
 	accountRepository := repository.NewAccountRepository(mongoClient)
 
 	summaryProcessor := libs.NewSummaryProcessor()
 	csvReader := libs.NewCsvReader()
+	emailSender := libs.NewEmailSender(cfg)
+	idGenerator := libs.NewIdGenerator()
 
-	service := services.NewTransactionsService(transactionRepository, accountRepository, csvReader, summaryProcessor)
+	service := services.NewTransactionsService(transactionRepository, accountRepository, csvReader, summaryProcessor, emailSender, idGenerator)
 	handler := handlers.NewTransactionsHandler(service)
 
 	mux := http.NewServeMux()
