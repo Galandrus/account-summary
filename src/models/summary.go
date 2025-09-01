@@ -7,13 +7,13 @@ import (
 	"time"
 )
 
-type TransactionSummary struct {
+type AccountSummary struct {
 	Overall SummaryStats `json:"overall" bson:"overall"`
 	Debits  SummaryStats `json:"debits" bson:"debits"`
 	Credits SummaryStats `json:"credits" bson:"credits"`
 }
 
-func (s *TransactionSummary) String() string {
+func (s *AccountSummary) String() string {
 	return fmt.Sprintf("Overall: \n%s\nDebits: \n%s\nCredits: \n%s", s.Overall.String(), s.Debits.String(), s.Credits.String())
 }
 

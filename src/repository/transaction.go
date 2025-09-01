@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"account-summary/src/internal/repositories"
 	"account-summary/src/models"
 	"context"
 	"log"
@@ -9,16 +10,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type TransactionRepository interface {
-	GetTransactions(ctx context.Context, accountId string) ([]models.Transaction, error)
-	CreateTransactions(ctx context.Context, transactions []models.Transaction) error
-}
-
 type transactionRepository struct {
 	collection *mongo.Collection
 }
 
-func NewTransactionRepository(mongoClient *mongo.Client) TransactionRepository {
+func NewTransactionRepository(mongoClient *mongo.Client) repositories.TransactionRepositoryInterface {
 	collection := mongoClient.Database(dbName).Collection(collectionTransactions)
 
 	return &transactionRepository{collection: collection}

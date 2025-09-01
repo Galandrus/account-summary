@@ -1,6 +1,7 @@
-package libs
+package utils
 
 import (
+	"account-summary/src/internal/libs"
 	"fmt"
 	"math/rand"
 	"time"
@@ -8,14 +9,10 @@ import (
 	"github.com/oklog/ulid/v2"
 )
 
-type IdGenerator interface {
-	Generate(prefix string) string
-}
-
 type idGenerator struct {
 }
 
-func NewIdGenerator() IdGenerator {
+func NewIdGenerator() libs.IdGeneratorInterface {
 	return &idGenerator{}
 }
 

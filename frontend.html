@@ -342,9 +342,15 @@
             return;
           }
 
-          const response = await fetch(
-            `/send-email?accountEmail=${encodeURIComponent(accountEmail)}`
-          );
+          const response = await fetch(`/send-email`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              accountEmail: accountEmail,
+            }),
+          });
 
           if (response.ok) {
             const responseText = await response.text();

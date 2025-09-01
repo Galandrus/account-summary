@@ -1,7 +1,8 @@
-package libs
+package email
 
 import (
 	"account-summary/src/config"
+	"account-summary/src/internal/libs"
 	"account-summary/src/models"
 	"bytes"
 	"fmt"
@@ -11,10 +12,6 @@ import (
 	"time"
 )
 
-type EmailSender interface {
-	SendEmail(to string, subject string, summary models.TransactionSummary) error
-}
-
 type emailSender struct {
 	from     string
 	password string
@@ -22,7 +19,7 @@ type emailSender struct {
 	smtpPort string
 }
 
-func NewEmailSender(cfg *config.Config) EmailSender {
+func NewEmailSender(cfg *config.Config) libs.EmailSenderInterface {
 	return &emailSender{
 		from:     cfg.EmailFrom,
 		password: cfg.EmailPassword,
@@ -32,19 +29,19 @@ func NewEmailSender(cfg *config.Config) EmailSender {
 }
 
 type TemplateData struct {
-	models.TransactionSummary
+	models.AccountSummary
 	GeneratedDate string
 }
 
-func (e *emailSender) SendEmail(to string, subject string, summary models.TransactionSummary) error {
+func (e *emailSender) SendAccountSummaryEmail(to string, subject string, summary models.AccountSummary) error {
 	tmpl, err := template.ParseFiles("src/templates/summary.html")
 	if err != nil {
 		return fmt.Errorf("error parsing template: %v", err)
 	}
 
 	templateData := TemplateData{
-		TransactionSummary: summary,
-		GeneratedDate:      time.Now().Format("January 2, 2006 at 3:04 PM"),
+		AccountSummary: summary,
+		GeneratedDate:  time.Now().Format("January 2, 2006 at 3:04 PM"),
 	}
 
 	var body bytes.Buffer
@@ -53,11 +50,14 @@ func (e *emailSender) SendEmail(to string, subject string, summary models.Transa
 		return fmt.Errorf("error executing template: %v", err)
 	}
 
-	message := e.createMIMEMessage(to, subject, body.String())
+	return e.sendEmail(to, subject, &body)
+}
 
+func (e *emailSender) sendEmail(to string, subject string, body *bytes.Buffer) error {
+	message := e.createMIMEMessage(to, subject, body.String())
 	auth := smtp.PlainAuth("", e.from, e.password, e.smtpHost)
 
-	err = smtp.SendMail(
+	err := smtp.SendMail(
 		fmt.Sprintf("%s:%s", e.smtpHost, e.smtpPort),
 		auth,
 		e.from,

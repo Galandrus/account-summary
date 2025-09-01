@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"account-summary/src/internal/repositories"
 	"account-summary/src/models"
 	"context"
 
@@ -9,17 +10,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type AccountRepository interface {
-	GetAccountByEmail(ctx context.Context, email string) (*models.Account, error)
-	GetAccountById(ctx context.Context, id string) (*models.Account, error)
-	UpsertAccount(ctx context.Context, account models.Account) error
-}
-
 type accountRepository struct {
 	collection *mongo.Collection
 }
 
-func NewAccountRepository(mongoClient *mongo.Client) AccountRepository {
+func NewAccountRepository(mongoClient *mongo.Client) repositories.AccountRepositoryInterface {
 	collection := mongoClient.Database(dbName).Collection(collectionAccounts)
 
 	return &accountRepository{collection: collection}

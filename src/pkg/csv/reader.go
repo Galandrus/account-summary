@@ -1,6 +1,7 @@
-package libs
+package csv
 
 import (
+	"account-summary/src/internal/libs"
 	"account-summary/src/models"
 	"encoding/csv"
 	"errors"
@@ -11,34 +12,22 @@ import (
 	"time"
 )
 
-type CsvReader interface {
-	LoadTransactions(path string) ([]models.Transaction, error)
+type csvReader struct {
+	loader libs.FileLoaderInterface
 }
 
-type csvReader struct{}
-
-func NewCsvReader() CsvReader {
-	return &csvReader{}
+func NewCsvReader(loader libs.FileLoaderInterface) libs.CsvReaderInterface {
+	return &csvReader{loader: loader}
 }
 
 func (c *csvReader) LoadTransactions(path string) ([]models.Transaction, error) {
-	fileCsv, err := c.loadFile(path)
+	fileCsv, err := c.loader.LoadFile(path)
 	if err != nil {
 		return nil, err
 	}
 	defer fileCsv.Close()
 
 	return c.readCsvFile(fileCsv)
-}
-
-func (c *csvReader) loadFile(path string) (*os.File, error) {
-	fileCsv, err := os.Open(path)
-	if err != nil {
-		log.Default().Printf("Error to open csv file: %v\n", err)
-		return nil, fmt.Errorf("error to open csv file: %v", err)
-	}
-
-	return fileCsv, nil
 }
 
 func (c *csvReader) readCsvFile(fileCsv *os.File) ([]models.Transaction, error) {

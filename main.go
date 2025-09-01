@@ -4,32 +4,15 @@ import (
 	"account-summary/src/config"
 	"account-summary/src/connections"
 	"account-summary/src/handlers"
-	"account-summary/src/libs"
+	"account-summary/src/pkg/csv"
+	"account-summary/src/pkg/email"
+	"account-summary/src/pkg/files"
+	"account-summary/src/pkg/utils"
 	"account-summary/src/repository"
+	"account-summary/src/server"
 	"account-summary/src/services"
 	"context"
-	"fmt"
-	"log"
-	"net/http"
 )
-
-// Middleware CORS para permitir peticiones desde el frontend
-func corsMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Permitir todos los orígenes (para desarrollo)
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-
-		// Manejar preflight requests
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
-}
 
 func main() {
 	cfg := config.Load()
@@ -40,36 +23,17 @@ func main() {
 	transactionRepository := repository.NewTransactionRepository(mongoClient)
 	accountRepository := repository.NewAccountRepository(mongoClient)
 
-	summaryProcessor := libs.NewSummaryProcessor()
-	csvReader := libs.NewCsvReader()
-	emailSender := libs.NewEmailSender(cfg)
-	idGenerator := libs.NewIdGenerator()
+	loader := files.NewLocalLoader()
+	summaryProcessor := utils.NewSummaryProcessor()
+	csvReader := csv.NewCsvReader(loader)
+	emailSender := email.NewEmailSender(cfg)
+	idGenerator := utils.NewIdGenerator()
 
-	service := services.NewTransactionsService(transactionRepository, accountRepository, csvReader, summaryProcessor, emailSender, idGenerator)
-	handler := handlers.NewTransactionsHandler(service)
+	accountsService := services.NewAccountsService(accountRepository, idGenerator, emailSender)
+	transactionsService := services.NewTransactionsService(transactionRepository, accountsService, csvReader, summaryProcessor)
 
-	mux := http.NewServeMux()
+	handler := handlers.NewMainApiHandler(transactionsService, accountsService)
 
-	// Servir archivos estáticos desde la carpeta assets
-	fs := http.FileServer(http.Dir("assets"))
-	mux.Handle("/assets/", http.StripPrefix("/assets/", fs))
-
-	// Servir el frontend en la ruta raíz
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/" {
-			http.ServeFile(w, r, "frontend.html")
-		} else {
-			http.NotFound(w, r)
-		}
-	})
-
-	// Rutas de la API
-	mux.HandleFunc("/load-transactions", handler.LoadTransactions)
-	mux.HandleFunc("/transactions", handler.GetTransactions)
-	mux.HandleFunc("/summary", handler.GetSummary)
-	mux.HandleFunc("/send-email", handler.SendEmail)
-
-	fmt.Printf("server running on http://localhost:%s\n", cfg.Port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", cfg.Port), corsMiddleware(mux)))
-
+	server := server.NewServer(cfg, handler)
+	server.Start()
 }

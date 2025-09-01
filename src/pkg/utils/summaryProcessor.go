@@ -1,22 +1,19 @@
-package libs
+package utils
 
 import (
+	"account-summary/src/internal/libs"
 	"account-summary/src/models"
 )
-
-type SummaryProcessor interface {
-	ProcessSummary(transactions []models.Transaction) (models.TransactionSummary, error)
-}
 
 type summaryProcessor struct {
 }
 
-func NewSummaryProcessor() SummaryProcessor {
+func NewSummaryProcessor() libs.SummaryProcessorInterface {
 	return &summaryProcessor{}
 }
 
-func (s *summaryProcessor) ProcessSummary(transactions []models.Transaction) (models.TransactionSummary, error) {
-	summary := models.TransactionSummary{}
+func (s *summaryProcessor) ProcessSummary(transactions []models.Transaction) (models.AccountSummary, error) {
+	summary := models.AccountSummary{}
 	summary.Overall.TransactionsPerMonth = make(models.TransactionsPerMonth)
 	summary.Debits.TransactionsPerMonth = make(models.TransactionsPerMonth)
 	summary.Credits.TransactionsPerMonth = make(models.TransactionsPerMonth)
