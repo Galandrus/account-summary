@@ -3,7 +3,6 @@ package handlers
 import (
 	"account-summary/src/internal/handlers"
 	"account-summary/src/internal/services"
-	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -42,8 +41,7 @@ func (h *mainApiHandler) GetTransactions(res http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	res.WriteHeader(http.StatusOK)
-	json.NewEncoder(res).Encode(transactions)
+	sendJSONResponse(res, transactions, http.StatusOK)
 }
 
 func (h *mainApiHandler) LoadTransactions(res http.ResponseWriter, req *http.Request) {
@@ -65,8 +63,7 @@ func (h *mainApiHandler) LoadTransactions(res http.ResponseWriter, req *http.Req
 		return
 	}
 
-	res.WriteHeader(http.StatusOK)
-	json.NewEncoder(res).Encode(fmt.Sprintf("Transactions loaded successfully for account %s", data.AccountEmail))
+	sendJSONResponse(res, fmt.Sprintf("Transactions loaded successfully for account %s", data.AccountEmail), http.StatusOK)
 }
 
 func (h *mainApiHandler) GetSummary(res http.ResponseWriter, req *http.Request) {
@@ -88,8 +85,7 @@ func (h *mainApiHandler) GetSummary(res http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	res.WriteHeader(http.StatusOK)
-	res.Write([]byte(account.Summary.String()))
+	sendTextResponse(res, account.Summary.String(), http.StatusOK)
 }
 
 func (h *mainApiHandler) SendSummaryEmail(res http.ResponseWriter, req *http.Request) {
@@ -111,6 +107,5 @@ func (h *mainApiHandler) SendSummaryEmail(res http.ResponseWriter, req *http.Req
 		return
 	}
 
-	res.WriteHeader(http.StatusOK)
-	res.Write([]byte("Email sent successfully"))
+	sendTextResponse(res, "Email sent successfully", http.StatusOK)
 }

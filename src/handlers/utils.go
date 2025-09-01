@@ -68,3 +68,15 @@ func getBody[T any](req *http.Request) (*T, error) {
 
 	return &data, nil
 }
+
+func sendJSONResponse(res http.ResponseWriter, data interface{}, statusCode int) {
+	res.Header().Set("Content-Type", "application/json")
+	res.WriteHeader(statusCode)
+	json.NewEncoder(res).Encode(data)
+}
+
+func sendTextResponse(res http.ResponseWriter, data string, statusCode int) {
+	res.Header().Set("Content-Type", "text/plain")
+	res.WriteHeader(statusCode)
+	res.Write([]byte(data))
+}
