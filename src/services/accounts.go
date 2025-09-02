@@ -1,9 +1,9 @@
 package services
 
 import (
-	"account-summary/src/internal/libs"
-	"account-summary/src/internal/repositories"
-	"account-summary/src/internal/services"
+	"account-summary/src/interfaces/libs"
+	"account-summary/src/interfaces/repositories"
+	"account-summary/src/interfaces/services"
 	"account-summary/src/models"
 	"context"
 	"errors"
@@ -77,7 +77,7 @@ func (s *accountsService) SendSummaryEmail(ctx context.Context, accountEmail str
 		return err
 	}
 
-	err = s.emailSender.SendAccountSummaryEmail(accountEmail, "Transaction Summary", account.Summary)
+	err = s.emailSender.SendAccountSummaryEmail(accountEmail, "Account Summary", account.Summary)
 	if err != nil {
 		log.Default().Printf("error to send email: %v\n", err)
 		return err

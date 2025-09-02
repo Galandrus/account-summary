@@ -1,7 +1,7 @@
 package csv
 
 import (
-	"account-summary/src/internal/libs"
+	"account-summary/src/interfaces/libs"
 	"account-summary/src/models"
 	"encoding/csv"
 	"errors"

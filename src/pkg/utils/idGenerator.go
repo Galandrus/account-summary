@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"account-summary/src/internal/libs"
+	"account-summary/src/interfaces/libs"
 	"fmt"
 	"math/rand"
 	"time"

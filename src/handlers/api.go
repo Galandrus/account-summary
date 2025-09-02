@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"account-summary/src/internal/handlers"
-	"account-summary/src/internal/services"
+	"account-summary/src/interfaces/handlers"
+	"account-summary/src/interfaces/services"
 	"fmt"
 	"net/http"
 )

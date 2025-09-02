@@ -1,9 +1,9 @@
 package services
 
 import (
-	"account-summary/src/internal/libs"
-	"account-summary/src/internal/repositories"
-	"account-summary/src/internal/services"
+	"account-summary/src/interfaces/libs"
+	"account-summary/src/interfaces/repositories"
+	"account-summary/src/interfaces/services"
 	"account-summary/src/models"
 	"context"
 	"log"

@@ -2,8 +2,8 @@ package server
 
 import (
 	"account-summary/src/config"
-	"account-summary/src/internal/handlers"
-	"account-summary/src/internal/server"
+	"account-summary/src/interfaces/handlers"
+	"account-summary/src/interfaces/server"
 	"fmt"
 	"log"
 	"net/http"

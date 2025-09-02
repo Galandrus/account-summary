@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"account-summary/src/internal/repositories"
+	"account-summary/src/interfaces/repositories"
 	"account-summary/src/models"
 	"context"
 	"log"

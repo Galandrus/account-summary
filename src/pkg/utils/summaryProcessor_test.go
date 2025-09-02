@@ -6,13 +6,13 @@ import (
 	"time"
 
 	"account-summary/src/models"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewSummaryProcessor(t *testing.T) {
 	processor := NewSummaryProcessor()
-	if processor == nil {
-		t.Error("NewSummaryProcessor should not return nil")
-	}
+	assert.NotNil(t, processor, "NewSummaryProcessor should not return nil")
 }
 
 func TestProcessSummary_EmptyTransactions(t *testing.T) {
@@ -21,29 +21,12 @@ func TestProcessSummary_EmptyTransactions(t *testing.T) {
 
 	summary, err := processor.ProcessSummary(transactions)
 
-	if err != nil {
-		t.Errorf("Expected no error, got %v", err)
-	}
-
-	if summary.Overall.TotalAmount != 0 {
-		t.Errorf("Expected overall total amount to be 0, got %f", summary.Overall.TotalAmount)
-	}
-
-	if summary.Overall.TotalTransactions != 0 {
-		t.Errorf("Expected overall total transactions to be 0, got %d", summary.Overall.TotalTransactions)
-	}
-
-	if summary.Overall.AverageAmount != 0 {
-		t.Errorf("Expected overall average amount to be 0, got %f", summary.Overall.AverageAmount)
-	}
-
-	if summary.Credits.TotalAmount != 0 {
-		t.Errorf("Expected credits total amount to be 0, got %f", summary.Credits.TotalAmount)
-	}
-
-	if summary.Debits.TotalAmount != 0 {
-		t.Errorf("Expected debits total amount to be 0, got %f", summary.Debits.TotalAmount)
-	}
+	assert.NoError(t, err)
+	assert.Equal(t, 0.0, summary.Overall.TotalAmount)
+	assert.Equal(t, 0, summary.Overall.TotalTransactions)
+	assert.Equal(t, 0.0, summary.Overall.AverageAmount)
+	assert.Equal(t, 0.0, summary.Credits.TotalAmount)
+	assert.Equal(t, 0.0, summary.Debits.TotalAmount)
 }
 
 func TestProcessSummary_OnlyCredits(t *testing.T) {
@@ -71,69 +54,35 @@ func TestProcessSummary_OnlyCredits(t *testing.T) {
 
 	summary, err := processor.ProcessSummary(transactions)
 
-	if err != nil {
-		t.Errorf("Expected no error, got %v", err)
-	}
+	assert.NoError(t, err)
 
 	// Verificar overall
 	expectedOverallTotal := 600.0
-	if summary.Overall.TotalAmount != expectedOverallTotal {
-		t.Errorf("Expected overall total amount to be %f, got %f", expectedOverallTotal, summary.Overall.TotalAmount)
-	}
-
-	if summary.Overall.TotalTransactions != 3 {
-		t.Errorf("Expected overall total transactions to be 3, got %d", summary.Overall.TotalTransactions)
-	}
+	assert.Equal(t, expectedOverallTotal, summary.Overall.TotalAmount)
+	assert.Equal(t, 3, summary.Overall.TotalTransactions)
 
 	expectedOverallAverage := 200.0
-	if summary.Overall.AverageAmount != expectedOverallAverage {
-		t.Errorf("Expected overall average amount to be %f, got %f", expectedOverallAverage, summary.Overall.AverageAmount)
-	}
+	assert.Equal(t, expectedOverallAverage, summary.Overall.AverageAmount)
 
 	// Verificar credits
-	if summary.Credits.TotalAmount != expectedOverallTotal {
-		t.Errorf("Expected credits total amount to be %f, got %f", expectedOverallTotal, summary.Credits.TotalAmount)
-	}
-
-	if summary.Credits.TotalTransactions != 3 {
-		t.Errorf("Expected credits total transactions to be 3, got %d", summary.Credits.TotalTransactions)
-	}
-
-	if summary.Credits.AverageAmount != expectedOverallAverage {
-		t.Errorf("Expected credits average amount to be %f, got %f", expectedOverallAverage, summary.Credits.AverageAmount)
-	}
+	assert.Equal(t, expectedOverallTotal, summary.Credits.TotalAmount)
+	assert.Equal(t, 3, summary.Credits.TotalTransactions)
+	assert.Equal(t, expectedOverallAverage, summary.Credits.AverageAmount)
 
 	// Verificar debits
-	if summary.Debits.TotalAmount != 0 {
-		t.Errorf("Expected debits total amount to be 0, got %f", summary.Debits.TotalAmount)
-	}
-
-	if summary.Debits.TotalTransactions != 0 {
-		t.Errorf("Expected debits total transactions to be 0, got %d", summary.Debits.TotalTransactions)
-	}
+	assert.Equal(t, 0.0, summary.Debits.TotalAmount)
+	assert.Equal(t, 0, summary.Debits.TotalTransactions)
 
 	// Verificar transacciones por mes
-	if len(summary.Credits.TransactionsPerMonth) != 2 {
-		t.Errorf("Expected 2 months in credits, got %d", len(summary.Credits.TransactionsPerMonth))
-	}
+	assert.Len(t, summary.Credits.TransactionsPerMonth, 2)
 
 	januaryStats := summary.Credits.TransactionsPerMonth[time.January]
-	if januaryStats.TotalAmount != 300.0 {
-		t.Errorf("Expected January credits total to be 300.0, got %f", januaryStats.TotalAmount)
-	}
-
-	if januaryStats.TotalTransactions != 2 {
-		t.Errorf("Expected January credits transactions to be 2, got %d", januaryStats.TotalTransactions)
-	}
+	assert.Equal(t, 300.0, januaryStats.TotalAmount)
+	assert.Equal(t, 2, januaryStats.TotalTransactions)
 
 	februaryStats := summary.Credits.TransactionsPerMonth[time.February]
-	if februaryStats.TotalAmount != 300.0 {
-		t.Errorf("Expected February credits total to be 300.0, got %f", februaryStats.TotalAmount)
-	}
-
-	if februaryStats.TotalTransactions != 1 {
-		t.Errorf("Expected February credits transactions to be 1, got %d", februaryStats.TotalTransactions)
-	}
+	assert.Equal(t, 300.0, februaryStats.TotalAmount)
+	assert.Equal(t, 1, februaryStats.TotalTransactions)
 }
 
 func TestProcessSummary_OnlyDebits(t *testing.T) {
@@ -161,46 +110,24 @@ func TestProcessSummary_OnlyDebits(t *testing.T) {
 
 	summary, err := processor.ProcessSummary(transactions)
 
-	if err != nil {
-		t.Errorf("Expected no error, got %v", err)
-	}
+	assert.NoError(t, err)
 
 	// Verificar overall
 	expectedOverallTotal := -600.0
-	if summary.Overall.TotalAmount != expectedOverallTotal {
-		t.Errorf("Expected overall total amount to be %f, got %f", expectedOverallTotal, summary.Overall.TotalAmount)
-	}
-
-	if summary.Overall.TotalTransactions != 3 {
-		t.Errorf("Expected overall total transactions to be 3, got %d", summary.Overall.TotalTransactions)
-	}
+	assert.Equal(t, expectedOverallTotal, summary.Overall.TotalAmount)
+	assert.Equal(t, 3, summary.Overall.TotalTransactions)
 
 	expectedOverallAverage := -200.0
-	if summary.Overall.AverageAmount != expectedOverallAverage {
-		t.Errorf("Expected overall average amount to be %f, got %f", expectedOverallAverage, summary.Overall.AverageAmount)
-	}
+	assert.Equal(t, expectedOverallAverage, summary.Overall.AverageAmount)
 
 	// Verificar debits
-	if summary.Debits.TotalAmount != expectedOverallTotal {
-		t.Errorf("Expected debits total amount to be %f, got %f", expectedOverallTotal, summary.Debits.TotalAmount)
-	}
-
-	if summary.Debits.TotalTransactions != 3 {
-		t.Errorf("Expected debits total transactions to be 3, got %d", summary.Debits.TotalTransactions)
-	}
-
-	if summary.Debits.AverageAmount != expectedOverallAverage {
-		t.Errorf("Expected debits average amount to be %f, got %f", expectedOverallAverage, summary.Debits.AverageAmount)
-	}
+	assert.Equal(t, expectedOverallTotal, summary.Debits.TotalAmount)
+	assert.Equal(t, 3, summary.Debits.TotalTransactions)
+	assert.Equal(t, expectedOverallAverage, summary.Debits.AverageAmount)
 
 	// Verificar credits
-	if summary.Credits.TotalAmount != 0 {
-		t.Errorf("Expected credits total amount to be 0, got %f", summary.Credits.TotalAmount)
-	}
-
-	if summary.Credits.TotalTransactions != 0 {
-		t.Errorf("Expected credits total transactions to be 0, got %d", summary.Credits.TotalTransactions)
-	}
+	assert.Equal(t, 0.0, summary.Credits.TotalAmount)
+	assert.Equal(t, 0, summary.Credits.TotalTransactions)
 }
 
 func TestProcessSummary_MixedTransactions(t *testing.T) {
@@ -234,54 +161,31 @@ func TestProcessSummary_MixedTransactions(t *testing.T) {
 
 	summary, err := processor.ProcessSummary(transactions)
 
-	if err != nil {
-		t.Errorf("Expected no error, got %v", err)
-	}
+	assert.NoError(t, err)
 
 	// Verificar overall
 	expectedOverallTotal := 175.0 // 100 + (-50) + 200 + (-75)
-	if summary.Overall.TotalAmount != expectedOverallTotal {
-		t.Errorf("Expected overall total amount to be %f, got %f", expectedOverallTotal, summary.Overall.TotalAmount)
-	}
-
-	if summary.Overall.TotalTransactions != 4 {
-		t.Errorf("Expected overall total transactions to be 4, got %d", summary.Overall.TotalTransactions)
-	}
+	assert.Equal(t, expectedOverallTotal, summary.Overall.TotalAmount)
+	assert.Equal(t, 4, summary.Overall.TotalTransactions)
 
 	expectedOverallAverage := 43.75 // 175 / 4
-	if summary.Overall.AverageAmount != expectedOverallAverage {
-		t.Errorf("Expected overall average amount to be %f, got %f", expectedOverallAverage, summary.Overall.AverageAmount)
-	}
+	assert.Equal(t, expectedOverallAverage, summary.Overall.AverageAmount)
 
 	// Verificar credits
 	expectedCreditsTotal := 300.0 // 100 + 200
-	if summary.Credits.TotalAmount != expectedCreditsTotal {
-		t.Errorf("Expected credits total amount to be %f, got %f", expectedCreditsTotal, summary.Credits.TotalAmount)
-	}
-
-	if summary.Credits.TotalTransactions != 2 {
-		t.Errorf("Expected credits total transactions to be 2, got %d", summary.Credits.TotalTransactions)
-	}
+	assert.Equal(t, expectedCreditsTotal, summary.Credits.TotalAmount)
+	assert.Equal(t, 2, summary.Credits.TotalTransactions)
 
 	expectedCreditsAverage := 150.0 // 300 / 2
-	if summary.Credits.AverageAmount != expectedCreditsAverage {
-		t.Errorf("Expected credits average amount to be %f, got %f", expectedCreditsAverage, summary.Credits.AverageAmount)
-	}
+	assert.Equal(t, expectedCreditsAverage, summary.Credits.AverageAmount)
 
 	// Verificar debits
 	expectedDebitsTotal := -125.0 // -50 + (-75)
-	if summary.Debits.TotalAmount != expectedDebitsTotal {
-		t.Errorf("Expected debits total amount to be %f, got %f", expectedDebitsTotal, summary.Debits.TotalAmount)
-	}
-
-	if summary.Debits.TotalTransactions != 2 {
-		t.Errorf("Expected debits total transactions to be 2, got %d", summary.Debits.TotalTransactions)
-	}
+	assert.Equal(t, expectedDebitsTotal, summary.Debits.TotalAmount)
+	assert.Equal(t, 2, summary.Debits.TotalTransactions)
 
 	expectedDebitsAverage := -62.5 // -125 / 2
-	if summary.Debits.AverageAmount != expectedDebitsAverage {
-		t.Errorf("Expected debits average amount to be %f, got %f", expectedDebitsAverage, summary.Debits.AverageAmount)
-	}
+	assert.Equal(t, expectedDebitsAverage, summary.Debits.AverageAmount)
 }
 
 func TestProcessSummary_ZeroAmountTransactions(t *testing.T) {
@@ -297,34 +201,15 @@ func TestProcessSummary_ZeroAmountTransactions(t *testing.T) {
 
 	summary, err := processor.ProcessSummary(transactions)
 
-	if err != nil {
-		t.Errorf("Expected no error, got %v", err)
-	}
+	assert.NoError(t, err)
 
 	// Las transacciones con monto 0 se consideran como débitos (amount > 0 es falso)
-	if summary.Overall.TotalAmount != 0 {
-		t.Errorf("Expected overall total amount to be 0, got %f", summary.Overall.TotalAmount)
-	}
-
-	if summary.Overall.TotalTransactions != 1 {
-		t.Errorf("Expected overall total transactions to be 1, got %d", summary.Overall.TotalTransactions)
-	}
-
-	if summary.Credits.TotalAmount != 0 {
-		t.Errorf("Expected credits total amount to be 0, got %f", summary.Credits.TotalAmount)
-	}
-
-	if summary.Credits.TotalTransactions != 0 {
-		t.Errorf("Expected credits total transactions to be 0, got %d", summary.Credits.TotalTransactions)
-	}
-
-	if summary.Debits.TotalAmount != 0 {
-		t.Errorf("Expected debits total amount to be 0, got %f", summary.Debits.TotalAmount)
-	}
-
-	if summary.Debits.TotalTransactions != 1 {
-		t.Errorf("Expected debits total transactions to be 1, got %d", summary.Debits.TotalTransactions)
-	}
+	assert.Equal(t, 0.0, summary.Overall.TotalAmount)
+	assert.Equal(t, 1, summary.Overall.TotalTransactions)
+	assert.Equal(t, 0.0, summary.Credits.TotalAmount)
+	assert.Equal(t, 0, summary.Credits.TotalTransactions)
+	assert.Equal(t, 0.0, summary.Debits.TotalAmount)
+	assert.Equal(t, 1, summary.Debits.TotalTransactions)
 }
 
 func TestProcessSummary_LargeDataset(t *testing.T) {
@@ -347,21 +232,10 @@ func TestProcessSummary_LargeDataset(t *testing.T) {
 
 	summary, err := processor.ProcessSummary(transactions)
 
-	if err != nil {
-		t.Errorf("Expected no error, got %v", err)
-	}
-
-	if summary.Overall.TotalTransactions != 1000 {
-		t.Errorf("Expected overall total transactions to be 1000, got %d", summary.Overall.TotalTransactions)
-	}
-
-	if summary.Credits.TotalTransactions != 500 {
-		t.Errorf("Expected credits total transactions to be 500, got %d", summary.Credits.TotalTransactions)
-	}
-
-	if summary.Debits.TotalTransactions != 500 {
-		t.Errorf("Expected debits total transactions to be 500, got %d", summary.Debits.TotalTransactions)
-	}
+	assert.NoError(t, err)
+	assert.Equal(t, 1000, summary.Overall.TotalTransactions)
+	assert.Equal(t, 500, summary.Credits.TotalTransactions)
+	assert.Equal(t, 500, summary.Debits.TotalTransactions)
 
 	// Calcular los montos esperados manualmente
 	// Índices impares (1, 3, 5, ..., 999): 1+3+5+...+999 = 250500
@@ -369,16 +243,9 @@ func TestProcessSummary_LargeDataset(t *testing.T) {
 	expectedCreditsTotal := float64(250500)
 	expectedDebitsTotal := float64(-250000)
 
-	if summary.Credits.TotalAmount != expectedCreditsTotal {
-		t.Errorf("Expected credits total amount to be %f, got %f", expectedCreditsTotal, summary.Credits.TotalAmount)
-	}
-
-	if summary.Debits.TotalAmount != expectedDebitsTotal {
-		t.Errorf("Expected debits total amount to be %f, got %f", expectedDebitsTotal, summary.Debits.TotalAmount)
-	}
+	assert.Equal(t, expectedCreditsTotal, summary.Credits.TotalAmount)
+	assert.Equal(t, expectedDebitsTotal, summary.Debits.TotalAmount)
 
 	expectedOverallTotal := expectedCreditsTotal + expectedDebitsTotal
-	if summary.Overall.TotalAmount != expectedOverallTotal {
-		t.Errorf("Expected overall total amount to be %f, got %f", expectedOverallTotal, summary.Overall.TotalAmount)
-	}
+	assert.Equal(t, expectedOverallTotal, summary.Overall.TotalAmount)
 }

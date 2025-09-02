@@ -2,7 +2,7 @@ package email
 
 import (
 	"account-summary/src/config"
-	"account-summary/src/internal/libs"
+	"account-summary/src/interfaces/libs"
 	"account-summary/src/models"
 	"bytes"
 	"fmt"

@@ -1,7 +1,7 @@
 package files
 
 import (
-	"account-summary/src/internal/libs"
+	"account-summary/src/interfaces/libs"
 	"fmt"
 	"log"
 	"os"
