@@ -17,6 +17,7 @@ Account summary system that processes CSV files and generates email reports.
 - Add more **tests** for both services and packages.
 - Implement a **structured logger** to improve error readability.
 - The API can be built with a web framework such as Fiber or Chi if more complex features are needed.
+- Improved email design with a focus on UX/UI.
 
 ## Notes
 
@@ -32,6 +33,7 @@ Account summary system that processes CSV files and generates email reports.
 - Emails are sent from an existing Gmail account: `tepegamma@gmail.com`. I prefer using this backup account instead of my main one.
 - I did not use AWS services because I do not have an active account and encountered issues when trying to create one.
 - I built the API in the most basic way. Since I only needed a simple API, I decided not to use a web framework.
+- If you load the data multiple times, the transactions will be duplicated because it is the same file and there are no validations in place for this case.
 
 ## Page Functionality
 
